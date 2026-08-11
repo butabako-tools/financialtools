@@ -1,0 +1,26 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>みんなの金融資産額チェッカー｜ぶたの貯金箱</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3ef;color:#403a35;font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",Meiryo,sans-serif;line-height:1.7}.wrap{max-width:760px;margin:auto;padding:18px 14px 45px}.card{background:#fff;border-radius:20px;padding:22px;margin:14px 0;box-shadow:0 3px 15px #0000000b}h1{font-size:clamp(25px,7vw,38px);line-height:1.35;margin:0 0 10px}h2{font-size:20px;margin:0 0 15px}.lead{color:#6d655e}.note{font-size:13px;color:#776f68}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f7f4f0;padding:13px;border-radius:12px}.stat small{display:block;color:#766e67}.big{font-size:25px;font-weight:800}label{display:block;font-weight:700;margin:13px 0 5px}select,input,button{width:100%;padding:13px;border-radius:10px;font-size:16px}select,input{border:1px solid #d8d1ca;background:#fff}button{border:0;background:#5b7f6b;color:white;font-weight:700;margin-top:16px;cursor:pointer}.result{display:none}.badge{display:inline-block;background:#eee7df;padding:5px 10px;border-radius:99px;font-weight:700}.bar{height:13px;background:#e8e3dd;border-radius:99px;margin:12px 0;overflow:hidden}.bar span{display:block;height:100%;background:#5b7f6b;width:0;border-radius:99px}.warning{background:#fff8e8;border-left:4px solid #d2a14b;padding:11px 13px;border-radius:7px;font-size:13px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:8px 5px;border-bottom:1px solid #e6e0da;text-align:right}th:first-child,td:first-child{text-align:left}a{color:#536f83}.footer{text-align:center;color:#817970;font-size:13px;padding-top:20px}@media(max-width:520px){.grid{grid-template-columns:1fr}.card{padding:18px}}
+</style></head><body><div class="wrap">
+<section class="card"><h1>みんなの金融資産額チェッカー</h1><p class="lead">2025年のJ-FLEC「家計の金融行動に関する世論調査」をもとに、あなたの金融資産額を同年代の平均値・中央値と比較します。</p><p class="note">※「貯金」ではなく、調査上の「金融資産」を比較します。</p></section>
+<section class="card"><h2>あなたの現在地をチェック</h2>
+<label>世帯タイプ</label><select id="type"><option value="single">単身世帯</option><option value="multi">二人以上世帯</option></select>
+<label>年代</label><select id="age"><option value="20">20歳代</option><option value="30">30歳代</option><option value="40">40歳代</option><option value="50">50歳代</option><option value="60">60歳代</option><option value="70">70歳代</option></select>
+<label>あなたの金融資産額（万円）</label><input id="asset" type="number" min="0" step="1" placeholder="例：300"><button onclick="check()">チェックする</button></section>
+<section class="card result" id="result"><h2>あなたの現在地</h2><div class="grid">
+<div class="stat"><small>あなた</small><div class="big" id="you">-</div></div><div class="stat"><small>中央値</small><div class="big" id="med">-</div></div>
+<div class="stat"><small>平均値</small><div class="big" id="avg">-</div></div><div class="stat"><small>中央値比</small><div class="big" id="ratio">-</div></div></div>
+<p><span class="badge" id="status">-</span></p><div class="bar"><span id="bar"></span></div><p id="comment"></p><p class="note">※中央値・平均値との単純比較です。上位何％かを示すものではありません。</p></section>
+<section class="card"><h2>2025年｜年代別の金融資産</h2><div style="overflow:auto"><table id="table"></table></div><p class="note">単位：万円。金融資産を保有していない世帯も含む全体。</p></section>
+<section class="card"><h2>平均値と中央値の違い</h2><p><b>平均値</b>は全員の資産を合計して人数で割った数字。資産を多く持つ人の影響を受けやすいです。</p><p><b>中央値</b>は資産額を少ない順に並べたときの真ん中の数字。「みんなの真ん中」を見るなら中央値が分かりやすいです。</p><div class="warning">J-FLECの「金融資産」は、将来に備えて蓄えている預貯金・株式・投資信託・保険など。日常の決済用資金や土地・住宅などの実物資産は含みません。</div></section>
+<section class="card"><h2>出典・注意事項</h2><p>出典：金融経済教育推進機構（J-FLEC）「家計の金融行動に関する世論調査 2025年」</p><p><a href="https://www.j-flec.go.jp/data/kakekin_2025/" target="_blank" rel="noopener">J-FLEC公式・2025年調査ページ</a></p><p class="note">2025年調査は二人以上世帯5,000世帯、単身世帯2,500世帯を対象に、2025年6月20日～7月2日に実施。対象は20歳以上80歳未満です。</p><p class="note"><b>重要：</b>このため80歳代の区分はありません。また、これは「個人」ではなく「世帯」の金融資産保有額です。</p></section>
+<div class="footer">Powered by ぶたの貯金箱</div></div>
+<script>
+const D={single:{20:[255,37],30:[501,100],40:[859,100],50:[999,120],60:[1364,300],70:[1489,500]},multi:{20:[525,125],30:[1096,311],40:[1486,500],50:[1908,700],60:[2683,1400],70:[2416,1178]}};
+const f=n=>new Intl.NumberFormat('ja-JP').format(n);
+function table(){let d=D[type.value],s='<tr><th>年代</th><th>平均</th><th>中央値</th></tr>';[20,30,40,50,60,70].forEach(a=>s+=`<tr><td>${a}歳代</td><td>${f(d[a][0])}万円</td><td>${f(d[a][1])}万円</td></tr>`);document.querySelector('#table').innerHTML=s}
+type.onchange=table;table();
+function check(){let d=D[type.value][age.value],x=Number(asset.value);if(!Number.isFinite(x)||x<0)return alert('金融資産額を入力してください。');let r=x/d[1];you.textContent=f(x)+'万円';med.textContent=f(d[1])+'万円';avg.textContent=f(d[0])+'万円';ratio.textContent=Math.round(r*100)+'%';bar.style.width=Math.min(100,Math.max(3,r*50))+'%';let s,c;if(x<d[1]){s='中央値より少ない';c=`同年代の中央値 ${f(d[1])}万円を下回っています。まずは中央値を一つの目安にして家計を確認してみましょう。`}else if(x<d[0]){s='中央値以上・平均値未満';c=`中央値 ${f(d[1])}万円以上、平均値 ${f(d[0])}万円未満です。平均値だけでなく中央値も見ると現在地が分かりやすくなります。`}else{s='平均値以上';c=`同年代の平均値 ${f(d[0])}万円以上です。ただし資産額だけで家計の良し悪しは決まりません。負債や今後の支出も合わせて考えましょう。`}status.textContent=s;comment.textContent=c;result.style.display='block';result.scrollIntoView({behavior:'smooth'})}
+</script></body></html>
