@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="商品Aと商品Bの内容量と価格を入力するだけで、どちらがお得かを比較できる無料ツールです。">
+<title>どっちがお得？｜ぶたの貯金箱</title>
+<style>
+  :root{--text:#333;--muted:#777;--line:#333;--accent:#2f6fed;--win:#eaf7ef;--win-text:#18713b}
+  *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color:var(--text);background:#fff;line-height:1.5}
+  .wrap{width:min(100%,680px);margin:0 auto;padding:20px 14px 36px}.hero{border:2px solid var(--line);border-radius:26px;padding:25px 18px 21px;text-align:center;margin-bottom:16px}.hero h1{margin:0 0 6px;font-size:clamp(22px,6vw,32px);letter-spacing:.05em}.hero p{margin:0;font-size:14px;color:var(--muted)}
+  .note{margin:10px 2px 16px;text-align:center;font-size:12px;color:var(--muted)}.products{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{border:2px solid var(--line);border-radius:18px;padding:14px 12px 15px;background:#fff}.card h2{margin:0 0 12px;text-align:center;font-size:20px}.field{margin-bottom:10px}.field:last-child{margin-bottom:0}label{display:block;font-size:12px;font-weight:700;margin:0 0 5px 3px}
+  .input-wrap{display:flex;align-items:center;gap:5px;border:1.5px solid #aaa;border-radius:11px;background:#fff;padding:0 7px 0 9px;height:46px}input{width:100%;min-width:0;border:0;outline:0;font-size:17px;font-weight:600;text-align:right;color:var(--text);background:transparent}input::placeholder{color:#bbb;font-weight:400}.unit-select{flex:none;border:0;outline:0;background:transparent;font-size:13px;color:var(--text);font-weight:700;padding:5px 1px}
+  .compare-btn{width:100%;margin:14px 0 16px;border:0;border-radius:14px;padding:15px 14px;font-size:17px;font-weight:700;color:#fff;background:var(--accent);cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.12)}.compare-btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+  .result{border:2px solid var(--line);border-radius:24px;padding:19px 15px 17px}.result-title{text-align:center;font-weight:800;font-size:19px;margin-bottom:14px}.winner{text-align:center;border-radius:15px;background:var(--win);color:var(--win-text);padding:13px 10px;margin-bottom:15px}.winner .small{font-size:12px}.winner .big{font-size:27px;font-weight:900;margin:1px 0}.winner .saving{font-size:13px;font-weight:700}.rows{display:grid;gap:8px}.row{display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:center;font-size:14px}.row strong{text-align:right}.bar-area{margin-top:15px}.bar-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}.bar{height:18px;border-radius:999px;background:#eee;overflow:hidden;display:flex}.bar-a,.bar-b{height:100%}.bar-a{background:#8fb0ed}.bar-b{background:#c8d5ef}.message{margin-top:13px;text-align:center;font-size:12px;color:var(--muted)}.error{display:none;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#fff1f1;color:#b3261e;font-size:13px;text-align:center}.footer{text-align:center;margin-top:25px;font-size:11px;color:#aaa}
+  @media (max-width:420px){.wrap{padding:14px 10px 30px}.hero{border-radius:22px;padding:21px 12px 18px}.products{gap:7px}.card{padding:12px 9px}.card h2{font-size:18px}.input-wrap{padding:0 5px 0 7px;height:44px}input{font-size:16px}.unit-select{font-size:11px;max-width:54px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero"><h1>商品AとB、どっちがお得？</h1><p>内容量と価格を入力するだけで、お得な商品がわかります。</p></section>
+  <p class="note">※gとkg、mlとLのように単位が違っても自動で換算します。</p>
+  <section class="products">
+    <div class="card"><h2>商品A</h2>
+      <div class="field"><label for="amountA">内容量</label><div class="input-wrap"><input id="amountA" type="number" min="0" step="any" inputmode="decimal" placeholder="例：500"><select id="unitASelect" class="unit-select" aria-label="商品Aの内容量単位"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">L</option><option value="個">個</option></select></div></div>
+      <div class="field"><label for="priceA">価格</label><div class="input-wrap"><input id="priceA" type="number" min="0" step="1" inputmode="numeric" placeholder="例：398"><span>円</span></div></div>
+    </div>
+    <div class="card"><h2>商品B</h2>
+      <div class="field"><label for="amountB">内容量</label><div class="input-wrap"><input id="amountB" type="number" min="0" step="any" inputmode="decimal" placeholder="例：700"><select id="unitBSelect" class="unit-select" aria-label="商品Bの内容量単位"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">L</option><option value="個">個</option></select></div></div>
+      <div class="field"><label for="priceB">価格</label><div class="input-wrap"><input id="priceB" type="number" min="0" step="1" inputmode="numeric" placeholder="例：498"><span>円</span></div></div>
+    </div>
+  </section>
+  <button class="compare-btn" onclick="compare()">どっちがお得か判定する</button><div id="error" class="error"></div>
+  <section class="result"><div class="result-title">判定結果</div><div class="winner"><div class="small">内容量あたりでお得なのは</div><div class="big" id="winner">商品A</div><div class="saving" id="saving">価格を入力すると判定できます</div></div>
+    <div class="rows"><div class="row"><span>商品A</span><strong id="unitA">—</strong></div><div class="row"><span>商品B</span><strong id="unitB">—</strong></div></div>
+    <div class="bar-area"><div class="bar-labels"><span>1単位あたりの価格</span><span>安い方がお得</span></div><div class="bar"><div class="bar-a" id="barA" style="width:50%"></div><div class="bar-b" id="barB" style="width:50%"></div></div></div>
+    <div class="message" id="message">数字を入力して判定してください。</div>
+  </section>
+  <div class="footer">Powered by ぶたの貯金箱</div>
+</div>
+<script>
+function toBaseAmount(amount,unit){return{g:{base:'weight',value:amount},kg:{base:'weight',value:amount*1000},ml:{base:'volume',value:amount},l:{base:'volume',value:amount*1000},'個':{base:'count',value:amount}}[unit]}
+function formatUnitPrice(price,base){if(base==='weight')return price.toFixed(2)+'円 / 100g';if(base==='volume')return price.toFixed(2)+'円 / 100ml';return price.toFixed(2)+'円 / 1個'}
+function compare(){
+ const amountA=parseFloat(document.getElementById('amountA').value),priceA=parseFloat(document.getElementById('priceA').value),amountB=parseFloat(document.getElementById('amountB').value),priceB=parseFloat(document.getElementById('priceB').value),unitA=document.getElementById('unitASelect').value,unitB=document.getElementById('unitBSelect').value,error=document.getElementById('error');
+ if(![amountA,priceA,amountB,priceB].every(v=>Number.isFinite(v)&&v>0)){error.textContent='商品A・Bの「内容量」と「価格」をすべて入力してください。';error.style.display='block';return}
+ const a=toBaseAmount(amountA,unitA),b=toBaseAmount(amountB,unitB);if(a.base!==b.base){error.textContent='商品Aと商品Bは、同じ種類の単位で比較してください（g・kg / ml・L / 個）。';error.style.display='block';return}error.style.display='none';
+ const base=a.base==='count'?1:100,unitPriceA=priceA/a.value*base,unitPriceB=priceB/b.value*base;document.getElementById('unitA').textContent=formatUnitPrice(unitPriceA,a.base);document.getElementById('unitB').textContent=formatUnitPrice(unitPriceB,a.base);
+ const winner=document.getElementById('winner'),saving=document.getElementById('saving'),message=document.getElementById('message');
+ if(Math.abs(unitPriceA-unitPriceB)<.000001){winner.textContent='ほぼ同じ';saving.textContent='1単位あたりの価格が同じです';message.textContent='価格以外の条件（容量・使いやすさなど）で選んでもOKです。'}
+ else if(unitPriceA<unitPriceB){const diff=(1-unitPriceA/unitPriceB)*100;winner.textContent='商品A';saving.textContent='商品Bより約'+diff.toFixed(1)+'%お得';message.textContent='同じ量を買うなら、商品Aの方が安くなります。'}
+ else{const diff=(1-unitPriceB/unitPriceA)*100;winner.textContent='商品B';saving.textContent='商品Aより約'+diff.toFixed(1)+'%お得';message.textContent='同じ量を買うなら、商品Bの方が安くなります。'}
+ const max=Math.max(unitPriceA,unitPriceB);document.getElementById('barA').style.width=(unitPriceA/max*100)+'%';document.getElementById('barB').style.width=(unitPriceB/max*100)+'%';
+}
+</script>
+</body></html>
