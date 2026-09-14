@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>住宅ローン比較シミュレーター Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f3f4f6;margin:0;padding:20px}
+.container{max-width:1100px;margin:auto}
+.card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+h1{text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+label{font-weight:600;font-size:14px}
+input{width:100%;padding:12px;margin-top:5px;box-sizing:border-box;border:1px solid #ddd;border-radius:10px}
+button{padding:14px 18px;border:none;border-radius:10px;cursor:pointer;font-weight:bold}
+.primary{background:#2563eb;color:white;width:100%;margin-top:15px}
+.save{background:#16a34a;color:white;width:100%;margin-top:15px}
+.table{width:100%;border-collapse:collapse;margin-top:20px}
+.table th,.table td{border:1px solid #ddd;padding:10px;text-align:center}
+.highlight{font-size:38px;font-weight:700;color:#dc2626;text-align:center}
+.section{margin-top:20px}
+canvas{margin-top:20px}
+</style>
+</head>
+<body>
+<div class="container">
+<div id="captureArea" class="card">
+<h1>🏠 住宅ローン比較シミュレーター Pro</h1>
+<div class="grid">
+<div><label>借入金額（円）</label><input id="loan" type="number" value="20000000"></div>
+<div><label>返済年数</label><input id="years" type="number" value="35"></div>
+<div><label>現在の金利（%）</label><input id="rate1" type="number" step="0.01" value="0.8"></div>
+<div><label>比較する金利（%）</label><input id="rate2" type="number" step="0.01" value="1.9"></div>
+</div>
+<button class="primary" onclick="calculate()">比較する</button>
+<div id="result"></div>
+<canvas id="monthlyChart"></canvas>
+<canvas id="totalChart"></canvas>
+</div>
+<button class="save" onclick="saveImage()">結果をPNG保存</button>
+</div>
+<script>
+let monthlyChart,totalChart;
+function payment(principal,annualRate,years){const r=annualRate/100/12;const n=years*12;if(r===0)return principal/n;return principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
+function yen(v){return "¥"+Math.round(v).toLocaleString("ja-JP");}
+function calculate(){
+const loan=Number(document.getElementById("loan").value);
+const years=Number(document.getElementById("years").value);
+const rate1=Number(document.getElementById("rate1").value);
+const rate2=Number(document.getElementById("rate2").value);
+const m1=payment(loan,rate1,years),m2=payment(loan,rate2,years);
+const t1=m1*years*12,t2=m2*years*12;
+document.getElementById("result").innerHTML=`
+<table class="table">
+<tr><th></th><th>${rate1}%</th><th>${rate2}%</th></tr>
+<tr><td>毎月返済額</td><td>${yen(m1)}</td><td>${yen(m2)}</td></tr>
+<tr><td>総返済額</td><td>${yen(t1)}</td><td>${yen(t2)}</td></tr>
+</table>
+<div class="section"><h3>毎月の負担増</h3><div class="highlight">${yen(m2-m1)}</div></div>
+<div class="section"><h3>総返済額の差</h3><div class="highlight">${yen(t2-t1)}</div></div>`;
+if(monthlyChart)monthlyChart.destroy();if(totalChart)totalChart.destroy();
+monthlyChart=new Chart(document.getElementById("monthlyChart"),{type:"bar",data:{labels:[rate1+"%",rate2+"%"],datasets:[{label:"毎月返済額",data:[m1,m2]}]}});
+totalChart=new Chart(document.getElementById("totalChart"),{type:"bar",data:{labels:[rate1+"%",rate2+"%"],datasets:[{label:"総返済額",data:[t1,t2]}]}});
+}
+function saveImage(){html2canvas(document.getElementById("captureArea"),{scale:2}).then(canvas=>{const a=document.createElement("a");a.download="loan-comparison.png";a.href=canvas.toDataURL("image/png");a.click();});}
+calculate();
+</script>
+</body>
+</html>
