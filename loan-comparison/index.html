@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>住宅ローン比較シミュレーター｜ぶたの貯金箱</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7f9;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;line-height:1.7}.wrap{max-width:900px;margin:auto;padding:28px 16px 50px}h1{text-align:center;font-size:28px;margin:0 0 8px}.lead{text-align:center;color:#666;margin:0 0 28px}.card{background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06)}h2{font-size:20px;margin:0 0 16px}.loans,.results{display:grid;grid-template-columns:1fr 1fr;gap:20px}.loan,.resultbox{border:1px solid #e2e5e9;border-radius:12px;padding:18px}.loan h3,.resultbox h3{margin:0 0 12px}label{display:block;font-weight:600;margin:12px 0 6px}.input{position:relative}input{width:100%;padding:13px 45px 13px 12px;border:1px solid #ccd1d8;border-radius:10px;font-size:16px}.unit{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#666}.btn{width:100%;margin-top:20px;padding:15px;border:0;border-radius:12px;background:#222;color:#fff;font-size:18px;font-weight:700;cursor:pointer}.result{display:none}.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #eee}.row:first-of-type{border-top:0}.value{font-weight:700;white-space:nowrap}.diff{margin-top:16px;padding:16px;background:#f6f7f9;border-radius:12px}.diff strong{font-size:20px}.note{font-size:13px;color:#666}.error{display:none;color:#b42318;margin-top:12px}.footer{text-align:center;color:#777;font-size:13px;margin-top:24px}@media(max-width:680px){h1{font-size:23px}.loans,.results{grid-template-columns:1fr}.card{padding:18px}}
+</style></head>
+<body><div class="wrap">
+<h1>住宅ローン比較シミュレーター</h1>
+<p class="lead">同じ借入額で、2つの住宅ローンを比較できます。</p>
+<div class="card"><h2>借入額</h2><label>元本（借入額）</label><div class="input"><input id="p" type="number" min="1" step="10000" value="40000000"><span class="unit">円</span></div></div>
+<div class="card"><h2>比較する住宅ローン</h2><div class="loans">
+<div class="loan"><h3>住宅ローン①</h3><label>金利（年率）</label><div class="input"><input id="r1" type="number" min="0" step="0.01" value="0.8"><span class="unit">%</span></div><label>返済期間</label><div class="input"><input id="y1" type="number" min="1" max="100" value="35"><span class="unit">年</span></div></div>
+<div class="loan"><h3>住宅ローン②</h3><label>金利（年率）</label><div class="input"><input id="r2" type="number" min="0" step="0.01" value="0.8"><span class="unit">%</span></div><label>返済期間</label><div class="input"><input id="y2" type="number" min="1" max="100" value="50"><span class="unit">年</span></div></div>
+</div><button class="btn" onclick="calc()">比較する</button><div class="error" id="err"></div></div>
+<div class="card result" id="out"><h2>比較結果</h2><div class="results">
+<div class="resultbox"><h3>住宅ローン①</h3><div class="row"><span>毎月の返済額</span><span class="value" id="m1"></span></div><div class="row"><span>総返済額</span><span class="value" id="t1"></span></div></div>
+<div class="resultbox"><h3>住宅ローン②</h3><div class="row"><span>毎月の返済額</span><span class="value" id="m2"></span></div><div class="row"><span>総返済額</span><span class="value" id="t2"></span></div></div>
+</div><div class="diff"><div class="row"><span>毎月の返済額の差</span><strong id="dm"></strong></div><div class="row"><span>総返済額の差</span><strong id="dt"></strong></div><p class="note" id="text"></p></div><p class="note">※元利均等返済・ボーナス払いなしで試算しています。実際の返済額は金利タイプや手数料などによって異なります。</p></div>
+<div class="footer">Powered by ぶたの貯金箱</div></div>
+<script>
+function pay(p,r,y){let n=y*12,m=r/100/12;return m===0?p/n:p*m*Math.pow(1+m,n)/(Math.pow(1+m,n)-1)}
+function yen(x){return Math.round(x).toLocaleString("ja-JP")+"円"}
+function calc(){let p=+document.getElementById("p").value,r1=+document.getElementById("r1").value,y1=+document.getElementById("y1").value,r2=+document.getElementById("r2").value,y2=+document.getElementById("y2").value,e=document.getElementById("err");if(!p||p<=0||r1<0||r2<0||!y1||!y2){e.textContent="すべての項目を正しく入力してください。";e.style.display="block";return}e.style.display="none";let m1=pay(p,r1,y1),m2=pay(p,r2,y2),t1=m1*y1*12,t2=m2*y2*12;document.getElementById("m1").textContent=yen(m1);document.getElementById("m2").textContent=yen(m2);document.getElementById("t1").textContent=yen(t1);document.getElementById("t2").textContent=yen(t2);document.getElementById("dm").textContent=yen(Math.abs(m1-m2));document.getElementById("dt").textContent=yen(Math.abs(t1-t2));let a=m1>m2?"住宅ローン②のほうが毎月の返済額を抑えられます。":m1<m2?"住宅ローン①のほうが毎月の返済額を抑えられます。":"毎月の返済額はほぼ同じです。";let b=t1>t2?"総返済額は住宅ローン②のほうが少なくなります。":t1<t2?"総返済額は住宅ローン①のほうが少なくなります。":"総返済額もほぼ同じです。";document.getElementById("text").textContent=a+" "+b;document.getElementById("out").style.display="block"}calc();
+</script></body></html>
