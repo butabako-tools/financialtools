@@ -135,33 +135,30 @@ const pct = value => Number.isFinite(value) ? (value * 100).toFixed(2) + '%' : '
 // 各月末に保険料を支払い、死亡月末に保険金を受け取る前提。
 function monthlyIrr(monthlyPremium, premiumMonths, deathBenefit, deathMonths) {
   if (deathMonths <= 0) return NaN;
-  const flows = new Float64Array(deathMonths + 1);
-  for (let m = 1; m <= Math.min(premiumMonths, deathMonths); m++) flows[m] -= monthlyPremium;
-  flows[deathMonths] += deathBenefit;
 
-  const npv = rate => {
-    let total = 0;
-    let factor = 1;
-    for (let m = 1; m <= deathMonths; m++) {
-      factor *= (1 + rate);
-      total += flows[m] / factor;
+  // 死亡時点まで保険料を積み立てた場合の将来価値で比較する。
+  // IRRが求める月利では、積立保険料の将来価値と死亡保険金が一致する。
+  const futureValueDifference = rate => {
+    let accumulatedPremiums = 0;
+    for (let m = 1; m <= Math.min(premiumMonths, deathMonths); m++) {
+      accumulatedPremiums += monthlyPremium * Math.pow(1 + rate, deathMonths - m);
     }
-    return total;
+    return deathBenefit - accumulatedPremiums;
   };
 
   let low = -0.999999;
   let high = 1;
-  let fLow = npv(low);
-  let fHigh = npv(high);
+  let fLow = futureValueDifference(low);
+  let fHigh = futureValueDifference(high);
   while (fLow * fHigh > 0 && high < 100) {
     high = high * 2 + 1;
-    fHigh = npv(high);
+    fHigh = futureValueDifference(high);
   }
   if (!Number.isFinite(fLow) || !Number.isFinite(fHigh) || fLow * fHigh > 0) return NaN;
 
   for (let i = 0; i < 180; i++) {
     const mid = (low + high) / 2;
-    const fMid = npv(mid);
+    const fMid = futureValueDifference(mid);
     if (Math.abs(fMid) < 1e-7) return mid;
     if (fLow * fMid > 0) {
       low = mid;
