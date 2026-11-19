@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="終身保険の死亡保険金を受け取る場合の税引前IRRと、同等の普通預金金利を死亡年齢別にシミュレーションします。">
+<title>終身保険 IRRシミュレーター | Butabako</title>
+<style>
+:root{--primary:#4f46e5;--primary-dark:#4338ca;--bg:#f3f4f6;--card:#fff;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--soft:#eef2ff}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 14px;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;line-height:1.6}
+.container{max-width:980px;margin:0 auto}
+header{text-align:center;margin:8px 0 24px}
+.brand{font-size:.82rem;font-weight:700;letter-spacing:.12em;color:var(--primary)}
+h1{font-size:clamp(1.45rem,4vw,2rem);margin:6px 0}
+header p{color:var(--muted);margin:0;font-size:.93rem}
+.layout{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:760px){.layout{grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:0 6px 18px rgba(15,23,42,.04)}
+h2{font-size:1.08rem;margin:0 0 18px}
+.field{margin-bottom:16px}
+label{display:block;font-size:.88rem;font-weight:650;margin-bottom:6px}
+.input-wrap{display:flex;align-items:center;gap:8px}
+input{width:100%;min-width:0;padding:11px 12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;font-size:1rem;background:#fff;color:var(--text)}
+input:focus{outline:3px solid rgba(79,70,229,.14);border-color:var(--primary)}
+.unit{color:var(--muted);white-space:nowrap;font-size:.9rem}
+.hint{font-size:.76rem;color:var(--muted);margin-top:4px}
+.primary-result{background:var(--soft);border-radius:13px;padding:18px;text-align:center;margin-bottom:14px}
+.primary-result .caption{font-size:.86rem;font-weight:700;color:var(--primary)}
+.primary-result .number{font-size:clamp(2rem,6vw,2.65rem);font-weight:800;color:var(--primary);line-height:1.25;margin:5px 0}
+.primary-result .sub{font-size:.82rem;color:#4b5563}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{padding:12px;border:1px solid var(--border);border-radius:10px}
+.metric .k{font-size:.75rem;color:var(--muted)}
+.metric .v{font-size:1.08rem;font-weight:750;margin-top:3px;overflow-wrap:anywhere}
+.explain{font-size:.82rem;color:var(--muted);margin:14px 0 0}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem;white-space:nowrap}
+th,td{padding:11px 9px;border-bottom:1px solid var(--border);text-align:right}
+th{font-size:.77rem;color:var(--muted);font-weight:700;background:#f9fafb}
+th:first-child,td:first-child{text-align:center}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.selected{background:#eef2ff}
+.note{margin-top:18px;padding:14px 15px;border-radius:11px;background:#f9fafb;border:1px solid var(--border);font-size:.8rem;color:#4b5563}
+.note strong{color:var(--text)}
+.error{display:none;padding:10px 12px;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:.84rem;margin-bottom:12px}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin:22px 0 8px}
+@media(max-width:420px){.card{padding:17px}.metrics{gap:8px}.metric{padding:10px}.metric .v{font-size:.98rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="brand">BUTABAKO FINANCIAL TOOLS</div>
+  <h1>終身保険 IRRシミュレーター</h1>
+  <p>死亡保険金を受け取る場合、実質的に何％で運用したのと同じなのか？</p>
+</header>
+
+<div class="layout">
+<section class="card" aria-labelledby="input-title">
+  <h2 id="input-title">契約条件を入力</h2>
+  <div class="field">
+    <label for="entryAge">加入時年齢（契約開始時）</label>
+    <div class="input-wrap"><input id="entryAge" type="number" min="0" max="110" step="1" value="40"><span class="unit">歳</span></div>
+    <div class="hint">新たに契約する場合は、現在の年齢を入力</div>
+  </div>
+  <div class="field">
+    <label for="monthlyPremium">毎月の保険料</label>
+    <div class="input-wrap"><input id="monthlyPremium" type="number" min="1" step="100" value="20000"><span class="unit">円</span></div>
+  </div>
+  <div class="field">
+    <label for="paidUpAge">保険料払込終了年齢</label>
+    <div class="input-wrap"><input id="paidUpAge" type="number" min="1" max="120" step="1" value="60"><span class="unit">歳</span></div>
+  </div>
+  <div class="field">
+    <label for="deathBenefit">死亡保険金</label>
+    <div class="input-wrap"><input id="deathBenefit" type="number" min="1" step="10000" value="5000000"><span class="unit">円</span></div>
+  </div>
+  <div class="field">
+    <label for="deathAge">想定する死亡年齢</label>
+    <div class="input-wrap"><input id="deathAge" type="number" min="1" max="120" step="1" value="80"><span class="unit">歳</span></div>
+    <div class="hint">右側に、死亡年齢を変えた場合の比較も表示</div>
+  </div>
+  <div id="error" class="error" role="alert"></div>
+</section>
+
+<section class="card" aria-labelledby="result-title">
+  <h2 id="result-title">シミュレーション結果</h2>
+  <div class="primary-result">
+    <div class="caption">死亡時の税引前IRR（年率・複利）</div>
+    <div class="number" id="irrResult">—</div>
+    <div class="sub" id="resultSub">死亡保険金を受け取る場合の年率換算利回り</div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="k">保険料払込期間</div><div class="v" id="paymentYears">—</div></div>
+    <div class="metric"><div class="k">払込保険料総額</div><div class="v" id="totalPremium">—</div></div>
+    <div class="metric"><div class="k">死亡保険金</div><div class="v" id="benefitResult">—</div></div>
+    <div class="metric"><div class="k">保険金 − 払込総額</div><div class="v" id="difference">—</div></div>
+  </div>
+  <p class="explain" id="depositExplain">普通預金換算金利は、同じタイミングで同額を積み立て、死亡年齢時点で死亡保険金と同額になるために必要な税引前の年利（複利）や。</p>
+</section>
+</div>
+
+<section class="card" style="margin-top:18px" aria-labelledby="table-title">
+  <h2 id="table-title">死亡年齢ごとの利回り比較</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>死亡年齢</th><th>払込総額</th><th>IRR（年率）</th><th>普通預金換算金利*</th></tr></thead>
+      <tbody id="scenarioRows"></tbody>
+    </table>
+  </div>
+  <div class="note">
+    <strong>*普通預金換算金利について</strong><br>
+    保険料と同額を毎月預金し、死亡年齢に相当する時点で死亡保険金と同額になるために必要な年利を示す。税引前・複利での比較であり、実際の預金金利や税引後利回りを保証・予測するものではない。IRRと普通預金換算金利は、同じキャッシュフロー条件を置くため数学的には同じ数値になる。
+  </div>
+</section>
+
+<section class="note">
+  <strong>計算上の前提・注意事項</strong><br>
+  ・保険料は毎月末に支払い、死亡保険金は死亡年齢に到達した月末に受け取るものとして計算。<br>
+  ・死亡年齢まで保険契約が有効に継続し、入力した死亡保険金が全額支払われると仮定。<br>
+  ・死亡した月まで保険料を支払い、払込終了年齢以降は保険料が発生しないものとする。<br>
+  ・解約返戻金、配当金、保険料払込免除、税金、契約時の諸条件や物価変動は考慮しない。<br>
+  ・この結果は死亡保険金を受け取るケースの税引前IRRであり、死亡確率を加味した期待収益率や、保険商品の総合的な投資評価ではない。実際の契約内容に基づく判断には、保険会社の設計書・約款を確認すること。
+</section>
+
+<footer>Powered by Butabako</footer>
+</div>
+
+<script>
+const yen = value => Math.round(value).toLocaleString('ja-JP') + '円';
+const pct = value => Number.isFinite(value) ? (value * 100).toFixed(2) + '%' : '算出不可';
+
+// 月次キャッシュフローのIRRを二分法で求める。
+// 各月末に保険料を支払い、死亡月末に保険金を受け取る前提。
+function monthlyIrr(monthlyPremium, premiumMonths, deathBenefit, deathMonths) {
+  if (deathMonths <= 0) return NaN;
+  const flows = new Float64Array(deathMonths + 1);
+  for (let m = 1; m <= Math.min(premiumMonths, deathMonths); m++) flows[m] -= monthlyPremium;
+  flows[deathMonths] += deathBenefit;
+
+  const npv = rate => {
+    let total = 0;
+    let factor = 1;
+    for (let m = 1; m <= deathMonths; m++) {
+      factor *= (1 + rate);
+      total += flows[m] / factor;
+    }
+    return total;
+  };
+
+  let low = -0.999999;
+  let high = 1;
+  let fLow = npv(low);
+  let fHigh = npv(high);
+  while (fLow * fHigh > 0 && high < 100) {
+    high = high * 2 + 1;
+    fHigh = npv(high);
+  }
+  if (!Number.isFinite(fLow) || !Number.isFinite(fHigh) || fLow * fHigh > 0) return NaN;
+
+  for (let i = 0; i < 180; i++) {
+    const mid = (low + high) / 2;
+    const fMid = npv(mid);
+    if (Math.abs(fMid) < 1e-7) return mid;
+    if (fLow * fMid > 0) {
+      low = mid;
+      fLow = fMid;
+    } else {
+      high = mid;
+      fHigh = fMid;
+    }
+  }
+  return (low + high) / 2;
+}
+
+function calculate(entryAge, monthlyPremium, paidUpAge, benefit, deathAge) {
+  const deathMonths = Math.round((deathAge - entryAge) * 12);
+  const scheduledPremiumMonths = Math.round((paidUpAge - entryAge) * 12);
+  const premiumMonths = Math.min(deathMonths, scheduledPremiumMonths);
+  const total = monthlyPremium * premiumMonths;
+  const monthlyRate = monthlyIrr(monthlyPremium, premiumMonths, benefit, deathMonths);
+  const annualRate = Number.isFinite(monthlyRate) ? Math.pow(1 + monthlyRate, 12) - 1 : NaN;
+  return {deathMonths, premiumMonths, total, annualRate};
+}
+
+function update() {
+  const entryAge = Number(document.getElementById('entryAge').value);
+  const monthlyPremium = Number(document.getElementById('monthlyPremium').value);
+  const paidUpAge = Number(document.getElementById('paidUpAge').value);
+  const benefit = Number(document.getElementById('deathBenefit').value);
+  const deathAge = Number(document.getElementById('deathAge').value);
+  const error = document.getElementById('error');
+
+  let message = '';
+  if (![entryAge, monthlyPremium, paidUpAge, benefit, deathAge].every(Number.isFinite)) message = 'すべての項目を入力してください。';
+  else if (entryAge < 0 || entryAge > 110) message = '加入時年齢は0〜110歳で入力してください。';
+  else if (monthlyPremium <= 0 || benefit <= 0) message = '保険料と死亡保険金は1以上で入力してください。';
+  else if (paidUpAge <= entryAge || paidUpAge > 120) message = '払込終了年齢は加入時年齢より後、かつ120歳以下にしてください。';
+  else if (deathAge <= entryAge || deathAge > 120) message = '死亡年齢は加入時年齢より後、かつ120歳以下にしてください。';
+
+  if (message) {
+    error.textContent = message;
+    error.style.display = 'block';
+    document.getElementById('irrResult').textContent = '—';
+    document.getElementById('scenarioRows').innerHTML = '';
+    ['paymentYears','totalPremium','benefitResult','difference'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+  error.style.display = 'none';
+
+  const result = calculate(entryAge, monthlyPremium, paidUpAge, benefit, deathAge);
+  document.getElementById('irrResult').textContent = pct(result.annualRate);
+  document.getElementById('resultSub').textContent = deathAge + '歳で死亡保険金を受け取る想定';
+  document.getElementById('paymentYears').textContent = (result.premiumMonths / 12).toLocaleString('ja-JP', {maximumFractionDigits:2}) + '年';
+  document.getElementById('totalPremium').textContent = yen(result.total);
+  document.getElementById('benefitResult').textContent = yen(benefit);
+  document.getElementById('difference').textContent = yen(benefit - result.total);
+
+  // 払込終了年齢を起点に10歳刻みで比較。払込終了前のケースも参考として追加。
+  const ages = new Set([paidUpAge]);
+  for (let age = entryAge + 5; age < paidUpAge; age += 5) ages.add(age);
+  for (let offset = 10; offset <= 40; offset += 10) {
+    if (paidUpAge + offset <= 120) ages.add(paidUpAge + offset);
+  }
+  ages.add(deathAge);
+  const sortedAges = [...ages].filter(age => age > entryAge && age <= 120).sort((a,b)=>a-b);
+  const rows = sortedAges.map(age => {
+    const r = calculate(entryAge, monthlyPremium, paidUpAge, benefit, age);
+    const selected = age === deathAge ? ' class="selected"' : '';
+    return '<tr' + selected + '><td>' + age + '歳' + (age === deathAge ? '（入力値）' : '') + '</td><td>' + yen(r.total) + '</td><td>' + pct(r.annualRate) + '</td><td>' + pct(r.annualRate) + '</td></tr>';
+  }).join('');
+  document.getElementById('scenarioRows').innerHTML = rows;
+}
+
+document.querySelectorAll('input').forEach(input => input.addEventListener('input', update));
+update();
+</script>
+</body>
+</html>
