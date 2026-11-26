@@ -15,7 +15,7 @@ header{text-align:center;margin:8px 0 24px}
 h1{font-size:clamp(1.4rem,4vw,2rem);margin:6px 0}
 header p{color:var(--muted);margin:0;font-size:.93rem}
 .layout{display:grid;grid-template-columns:1fr;gap:18px}
-@media(min-width:760px){.layout{grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr)}}
+@media(min-width:760px){.layout{grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);align-items:start}}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:0 6px 18px rgba(15,23,42,.04)}
 h2{font-size:1.08rem;margin:0 0 18px}
 .field{margin-bottom:16px}
@@ -88,8 +88,15 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin:22px 0 8px}
     <span id="paymentSummary">4,123円 × 12か月 × 18年 ＝ 890,568円</span>
   </div>
 </section>
+<section class="card" aria-labelledby="events-title">
+  <h2 id="events-title">祝い金・満期金の受取スケジュール</h2>
+  <p class="hint" style="margin:-10px 0 14px">受取年齢と金額を入力。受取回数は最大8件まで登録できる。</p>
+  <div id="eventList" class="event-list"></div>
+  <button type="button" id="addEvent" class="add-btn">＋ 受取イベントを追加</button>
+</section>
+</div>
 
-<section class="card" aria-labelledby="result-title">
+<section class="card" style="margin-top:18px" aria-labelledby="result-title">
   <h2 id="result-title">シミュレーション結果</h2>
   <div id="error" class="error" role="alert"></div>
   <div class="primary-result">
@@ -106,14 +113,6 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin:22px 0 8px}
     <div class="metric"><div class="k">受取総額 − 払込総額</div><div class="v" id="profit">—</div></div>
   </div>
   <p class="explain">IRRは、保険料を支払った時期と祝い金・満期金を受け取った時期の両方を考慮して算出する。返戻率（受取総額 ÷ 払込総額）とは異なる指標やで。</p>
-</section>
-</div>
-
-<section class="card" style="margin-top:18px" aria-labelledby="events-title">
-  <h2 id="events-title">祝い金・満期金の受取スケジュール</h2>
-  <p class="hint" style="margin:-10px 0 14px">受取年齢と金額を入力。受取回数は最大8件まで登録できる。</p>
-  <div id="eventList" class="event-list"></div>
-  <button type="button" id="addEvent" class="add-btn">＋ 受取イベントを追加</button>
 </section>
 
 <section class="card" style="margin-top:18px" aria-labelledby="table-title">
