@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="学資保険の祝い金・満期金と保険料の支払い時期を考慮し、実質的な利回り（IRR）をシミュレーションします。">
+<title>Butabakoの学資保険の真の利回りチェックツール</title>
+<style>
+:root{--primary:#4f46e5;--primary-dark:#4338ca;--bg:#f3f4f6;--card:#fff;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--soft:#eef2ff;--danger:#991b1b}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 14px;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;line-height:1.6}
+.container{max-width:980px;margin:0 auto}
+header{text-align:center;margin:8px 0 24px}
+.brand{font-size:.82rem;font-weight:700;letter-spacing:.12em;color:var(--primary)}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:6px 0}
+header p{color:var(--muted);margin:0;font-size:.93rem}
+.layout{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:760px){.layout{grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:0 6px 18px rgba(15,23,42,.04)}
+h2{font-size:1.08rem;margin:0 0 18px}
+.field{margin-bottom:16px}
+label{display:block;font-size:.88rem;font-weight:650;margin-bottom:6px}
+.input-wrap{display:flex;align-items:center;gap:8px}
+input{width:100%;min-width:0;padding:11px 12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;font-size:1rem;background:#fff;color:var(--text)}
+input:focus{outline:3px solid rgba(79,70,229,.14);border-color:var(--primary)}
+.unit{color:var(--muted);white-space:nowrap;font-size:.9rem}
+.hint{font-size:.76rem;color:var(--muted);margin-top:4px}
+.primary-result{background:var(--soft);border-radius:13px;padding:18px;text-align:center;margin-bottom:14px}
+.primary-result .caption{font-size:.86rem;font-weight:700;color:var(--primary)}
+.primary-result .number{font-size:clamp(2rem,6vw,2.65rem);font-weight:800;color:var(--primary);line-height:1.25;margin:5px 0}
+.primary-result .sub{font-size:.82rem;color:#4b5563}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{padding:12px;border:1px solid var(--border);border-radius:10px}
+.metric .k{font-size:.75rem;color:var(--muted)}
+.metric .v{font-size:1.08rem;font-weight:750;margin-top:3px;overflow-wrap:anywhere}
+.explain{font-size:.82rem;color:var(--muted);margin:14px 0 0}
+.event-list{display:grid;gap:10px}
+.event{border:1px solid var(--border);border-radius:11px;padding:13px}
+.event-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.88rem;font-weight:700}
+.event-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.event-fields label{font-size:.78rem}
+.event-fields input{padding:9px 10px}
+button{font:inherit;cursor:pointer;border:0;border-radius:9px;padding:10px 14px}
+.add-btn{width:100%;margin-top:10px;background:#eef2ff;color:var(--primary);font-weight:700}
+.remove-btn{padding:5px 9px;background:#fef2f2;color:var(--danger);font-size:.78rem}
+.note{margin-top:18px;padding:14px 15px;border-radius:11px;background:#f9fafb;border:1px solid var(--border);font-size:.8rem;color:#4b5563}
+.note strong{color:var(--text)}
+.error{display:none;padding:10px 12px;border-radius:8px;background:#fef2f2;color:var(--danger);font-size:.84rem;margin-bottom:12px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem;white-space:nowrap}
+th,td{padding:11px 9px;border-bottom:1px solid var(--border);text-align:right}
+th{font-size:.77rem;color:var(--muted);font-weight:700;background:#f9fafb}
+th:first-child,td:first-child{text-align:center}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.selected{background:#eef2ff}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin:22px 0 8px}
+@media(max-width:420px){.card{padding:17px}.metrics{gap:8px}.metric{padding:10px}.metric .v{font-size:.98rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="brand">BUTABAKO FINANCIAL TOOLS</div>
+  <h1>Butabakoの学資保険の真の利回りチェックツール</h1>
+  <p>返戻率だけでは見えない、受取時期まで考慮した実質利回りをチェック</p>
+</header>
+
+<div class="layout">
+<section class="card" aria-labelledby="input-title">
+  <h2 id="input-title">契約条件を入力</h2>
+  <div class="field">
+    <label for="monthlyPremium">毎月の保険料</label>
+    <div class="input-wrap"><input id="monthlyPremium" type="number" min="1" step="1" value="4123"><span class="unit">円</span></div>
+  </div>
+  <div class="field">
+    <label for="childAge">契約時の子どもの年齢</label>
+    <div class="input-wrap"><input id="childAge" type="number" min="0" max="18" step="1" value="0"><span class="unit">歳</span></div>
+    <div class="hint">契約開始時点の子どもの年齢</div>
+  </div>
+  <div class="field">
+    <label for="paidUpAge">保険料払込終了年齢</label>
+    <div class="input-wrap"><input id="paidUpAge" type="number" min="1" max="30" step="1" value="18"><span class="unit">歳</span></div>
+    <div class="hint">払込年数 ＝ 払込終了年齢 − 契約時年齢</div>
+  </div>
+  <div class="note" style="margin-top:0">
+    <strong>払込総額の計算</strong><br>
+    毎月の保険料 × 12か月 ×（払込終了年齢 − 契約時年齢）<br>
+    <span id="paymentSummary">4,123円 × 12か月 × 18年 ＝ 890,568円</span>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="result-title">
+  <h2 id="result-title">シミュレーション結果</h2>
+  <div id="error" class="error" role="alert"></div>
+  <div class="primary-result">
+    <div class="caption">実質利回り（IRR・実効年率）</div>
+    <div class="number" id="irrResult">—</div>
+    <div class="sub" id="irrSub">受取時期と保険料の支払時期を考慮した年率換算</div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="k">払込年数</div><div class="v" id="paymentYears">—</div></div>
+    <div class="metric"><div class="k">払込回数</div><div class="v" id="paymentCount">—</div></div>
+    <div class="metric"><div class="k">払込保険料総額</div><div class="v" id="totalPremium">—</div></div>
+    <div class="metric"><div class="k">受取総額</div><div class="v" id="totalBenefit">—</div></div>
+    <div class="metric"><div class="k">返戻率</div><div class="v" id="returnRate">—</div></div>
+    <div class="metric"><div class="k">受取総額 − 払込総額</div><div class="v" id="profit">—</div></div>
+  </div>
+  <p class="explain">IRRは、保険料を支払った時期と祝い金・満期金を受け取った時期の両方を考慮して算出する。返戻率（受取総額 ÷ 払込総額）とは異なる指標やで。</p>
+</section>
+</div>
+
+<section class="card" style="margin-top:18px" aria-labelledby="events-title">
+  <h2 id="events-title">祝い金・満期金の受取スケジュール</h2>
+  <p class="hint" style="margin:-10px 0 14px">受取年齢と金額を入力。受取回数は最大8件まで登録できる。</p>
+  <div id="eventList" class="event-list"></div>
+  <button type="button" id="addEvent" class="add-btn">＋ 受取イベントを追加</button>
+</section>
+
+<section class="card" style="margin-top:18px" aria-labelledby="table-title">
+  <h2 id="table-title">受取イベント一覧</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>受取年齢</th><th>受取金額</th><th>契約からの経過月数</th></tr></thead>
+      <tbody id="eventRows"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="note">
+  <strong>計算上の前提・注意事項</strong><br>
+  ・保険料は毎月末に支払い、契約時年齢から払込終了年齢までの月数分を支払うものとする。<br>
+  ・払込回数は「（払込終了年齢 − 契約時年齢）× 12か月」。払込総額は「毎月の保険料 × 払込回数」で計算。<br>
+  ・祝い金・満期金は入力した受取年齢に到達した月末に受け取るものとする。<br>
+  ・同じ月に保険料の支払いと給付金の受け取りがある場合は、同月内のキャッシュフローとして合算する。<br>
+  ・税金、契約者死亡時の保険料払込免除などの保障価値、解約返戻金、配当金、物価変動は考慮しない。<br>
+  ・このシミュレーションは入力内容に基づく概算であり、実際の商品設計書・約款に記載された払込日・受取日と異なる場合は結果も変わる。契約判断には保険会社の設計書等を確認すること。
+</section>
+
+<footer>Powered by Butabako</footer>
+</div>
+
+<script>
+const yen = value => Math.round(value).toLocaleString('ja-JP') + '円';
+const pct = value => Number.isFinite(value) ? value.toFixed(3) + '%' : '算出不可';
+let eventId = 4;
+let events = [
+  {id:1, age:6, amount:100000},
+  {id:2, age:12, amount:100000},
+  {id:3, age:18, amount:800000}
+];
+
+function renderEvents() {
+  const list = document.getElementById('eventList');
+  list.innerHTML = '';
+  events.forEach((event,index) => {
+    const row = document.createElement('div');
+    row.className = 'event';
+    row.innerHTML = '<div class="event-head"><span>受取 ' + (index+1) + '</span><button type="button" class="remove-btn" data-remove="' + event.id + '" aria-label="受取イベントを削除">削除</button></div>' +
+      '<div class="event-fields">' +
+      '<div><label for="event-age-' + event.id + '">受取年齢（歳）</label><input id="event-age-' + event.id + '" data-field="age" data-id="' + event.id + '" type="number" min="0" max="100" step="1" value="' + (event.age ?? '') + '"></div>' +
+      '<div><label for="event-amount-' + event.id + '">受取金額（円）</label><input id="event-amount-' + event.id + '" data-field="amount" data-id="' + event.id + '" type="number" min="0" step="1" value="' + (event.amount ?? '') + '"></div>' +
+      '</div>';
+    list.appendChild(row);
+  });
+  document.getElementById('addEvent').disabled = events.length >= 8;
+  document.getElementById('addEvent').style.opacity = events.length >= 8 ? '.5' : '1';
+  list.querySelectorAll('input').forEach(input => input.addEventListener('input', e => {
+    const id = Number(e.target.dataset.id);
+    const field = e.target.dataset.field;
+    const item = events.find(x => x.id === id);
+    if (item) item[field] = e.target.value === '' ? '' : Number(e.target.value);
+    update();
+  }));
+  list.querySelectorAll('[data-remove]').forEach(button => button.addEventListener('click', () => {
+    if (events.length > 1) {
+      events = events.filter(x => x.id !== Number(button.dataset.remove));
+      renderEvents();
+      update();
+    }
+  }));
+}
+
+function normalizedNpv(cashflows, logFactor) {
+  let maxExponent = -Infinity;
+  for (let month = 0; month < cashflows.length; month++) {
+    if (cashflows[month] !== 0) maxExponent = Math.max(maxExponent, -month * logFactor);
+  }
+  if (!Number.isFinite(maxExponent)) return NaN;
+  let sum = 0;
+  for (let month = 0; month < cashflows.length; month++) {
+    if (cashflows[month] !== 0) sum += cashflows[month] * Math.exp(-month * logFactor - maxExponent);
+  }
+  return sum;
+}
+
+// 月次IRRを探索。対数変換と正規化NPVで、低い利回り側の数値オーバーフローを抑える。
+function findMonthlyIrr(cashflows) {
+  const minLog = Math.log(0.001);
+  const maxLog = Math.log(101);
+  const steps = 2400;
+  const roots = [];
+  let previousX = minLog;
+  let previousValue = normalizedNpv(cashflows, previousX);
+
+  for (let i = 1; i <= steps; i++) {
+    const x = minLog + (maxLog - minLog) * i / steps;
+    const value = normalizedNpv(cashflows, x);
+    if (Number.isFinite(previousValue) && Number.isFinite(value) &&
+        ((previousValue < 0 && value > 0) || (previousValue > 0 && value < 0))) {
+      let low = previousX, high = x, lowValue = previousValue;
+      for (let j = 0; j < 110; j++) {
+        const mid = (low + high) / 2;
+        const midValue = normalizedNpv(cashflows, mid);
+        if ((lowValue < 0 && midValue > 0) || (lowValue > 0 && midValue < 0)) {
+          high = mid;
+        } else {
+          low = mid;
+          lowValue = midValue;
+        }
+      }
+      const root = (low + high) / 2;
+      if (!roots.some(existing => Math.abs(existing - root) < 1e-7)) roots.push(root);
+    }
+    previousX = x;
+    previousValue = value;
+  }
+  if (!roots.length) return {rate:NaN, roots:0};
+  const selected = roots.reduce((best,current) => Math.abs(current) < Math.abs(best) ? current : best, roots[0]);
+  return {rate:Math.expm1(selected), roots:roots.length};
+}
+
+function update() {
+  const premium = Number(document.getElementById('monthlyPremium').value);
+  const childAge = Number(document.getElementById('childAge').value);
+  const paidUpAge = Number(document.getElementById('paidUpAge').value);
+  const error = document.getElementById('error');
+  let message = '';
+  if (![premium,childAge,paidUpAge].every(Number.isFinite)) message = '保険料・年齢をすべて入力してください。';
+  else if (premium <= 0) message = '毎月の保険料は1円以上で入力してください。';
+  else if (childAge < 0 || childAge > 30) message = '契約時年齢は0〜30歳で入力してください。';
+  else if (paidUpAge <= childAge || paidUpAge > 100) message = '払込終了年齢は契約時年齢より後、かつ100歳以下にしてください。';
+
+  const validEvents = [];
+  for (const event of events) {
+    const age = Number(event.age), amount = Number(event.amount);
+    if (event.age === '' || event.amount === '' || !Number.isFinite(age) || !Number.isFinite(amount) ||
+        age < childAge || age > 120 || amount < 0) {
+      message = '受取年齢は契約時年齢以降、受取金額は0円以上で入力してください。空欄も確認してください。';
+      break;
+    }
+    if (amount > 0) validEvents.push({age,amount});
+  }
+  if (!message && validEvents.length === 0) message = '受取金額を1件以上入力してください。';
+
+  const paymentYears = paidUpAge - childAge;
+  const paymentMonths = Math.round(paymentYears * 12);
+  const totalPremium = premium * paymentMonths;
+  document.getElementById('paymentSummary').textContent =
+    yen(premium) + ' × 12か月 × ' + paymentYears + '年 ＝ ' + yen(totalPremium);
+
+  if (message) {
+    error.textContent = message;
+    error.style.display = 'block';
+    ['irrResult','paymentYears','paymentCount','totalPremium','totalBenefit','returnRate','profit'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('eventRows').innerHTML = '';
+    return;
+  }
+  error.style.display = 'none';
+
+  const payoutMonths = validEvents.map(e => Math.round((e.age - childAge) * 12));
+  const lastMonth = Math.max(paymentMonths, ...payoutMonths);
+  if (lastMonth > 2400) {
+    error.textContent = '受取時期が計算範囲を超えています。年齢を確認してください。';
+    error.style.display = 'block';
+    return;
+  }
+
+  const cashflows = Array(lastMonth + 1).fill(0);
+  // 月末に毎月保険料を支払う。支払回数は「年齢差×12か月」。
+  for (let month = 1; month <= paymentMonths; month++) cashflows[month] -= premium;
+  validEvents.forEach((event,index) => { cashflows[payoutMonths[index]] += event.amount; });
+
+  const totalBenefit = validEvents.reduce((sum,event) => sum + event.amount,0);
+  const irr = findMonthlyIrr(cashflows);
+  const annualIrr = Number.isFinite(irr.rate) ? (Math.pow(1 + irr.rate,12) - 1) * 100 : NaN;
+
+  document.getElementById('irrResult').textContent = pct(annualIrr);
+  document.getElementById('irrSub').textContent = irr.roots > 1 ? '複数のIRR解を検出。0％に最も近い解を表示' : '受取時期と保険料の支払時期を考慮した年率換算';
+  document.getElementById('paymentYears').textContent = paymentYears.toLocaleString('ja-JP') + '年';
+  document.getElementById('paymentCount').textContent = paymentMonths.toLocaleString('ja-JP') + '回';
+  document.getElementById('totalPremium').textContent = yen(totalPremium);
+  document.getElementById('totalBenefit').textContent = yen(totalBenefit);
+  document.getElementById('returnRate').textContent = (totalBenefit / totalPremium * 100).toFixed(2) + '%';
+  document.getElementById('profit').textContent = yen(totalBenefit - totalPremium);
+
+  document.getElementById('eventRows').innerHTML = validEvents.map((event,index) =>
+    '<tr><td>' + event.age + '歳</td><td>' + yen(event.amount) + '</td><td>' + payoutMonths[index] + 'か月</td></tr>'
+  ).join('');
+}
+
+document.querySelectorAll('#monthlyPremium,#childAge,#paidUpAge').forEach(input => input.addEventListener('input',update));
+document.getElementById('addEvent').addEventListener('click',() => {
+  if (events.length < 8) {
+    events.push({id:eventId++,age:'',amount:''});
+    renderEvents();
+    update();
+  }
+});
+renderEvents();
+update();
+</script>
+</body>
+</html>
